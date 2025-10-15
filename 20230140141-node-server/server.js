@@ -1,27 +1,35 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); 
 const app = express();
-const port = 5000;
+const PORT = 3001;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors()); 
+app.use(express.json()); 
 
-// Endpoint GET sesuai tugas
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello from Server!' });
+  res.send('Home Page for API');
 });
 
-// Endpoint tambahan untuk demonstrasi
-app.get('/api/greet', (req, res) => {
-  const { name } = req.query;
-  if (name) {
-    res.json({ message: `Hello, ${name}! from Server` });
-  } else {
-    res.json({ message: 'Hello from Server!' });
-  }
+const bookRoutes = require('./routes/books');
+app.use('/api/books', bookRoutes);
+
+
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+});
+
+app.listen(PORT, () => {
+  console.log(`Express server running at http://localhost:${PORT}/`);
 });
